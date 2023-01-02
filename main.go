@@ -128,15 +128,18 @@ func main() {
 			quotes_count++
 			//считаем хеш, и конвертируем его в строку:
 			hasher.Reset()
-			io.WriteString(hasher, quote)
+			_, err := io.WriteString(hasher, quote)
+			errFunc(err)
 			hash := hasher.Sum(nil)
 			hash_string := hex.EncodeToString(hash)
 			//проверяем уникальность хеша цитаты
 			if !used[hash_string] {
 				//все в порядке - заносим хеш в хранилище, и записываем его и цитату в файлы
 				used[hash_string] = true
-				hash_file.Write(hash)
+				_, err := hash_file.Write(hash)
+				errFunc(err)
 				quotes_file.WriteString(quote + "\n\n\n")
+
 				dup_count = 0
 			} else {
 				//получен повтор - пришло время проверить, не пора ли закругляться?
@@ -152,5 +155,11 @@ func main() {
 			fmt.Printf("Всего %d / Повторов %d (%d записей/сек) \n", len(used), dup_count, quotes_count/REPORT_PERIOD)
 			quotes_count = 0
 		}
+	}
+}
+
+func errFunc(err error) {
+	if err != nil {
+		fmt.Println(err)
 	}
 }
